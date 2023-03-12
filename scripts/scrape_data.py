@@ -119,6 +119,10 @@ def scrape_from_urls(starting_idx = 0, save_file_path=os.path.join(DATA_FOLDER, 
         with(open(save_file_path, 'a')) as f:
             f.write(f"{title}\t{author}\t{rating}\t{num_ratings}\t{description}\t{url}")
             
+        # Print updates periodically
+        if(i % 100 == 0):
+            print(f"Scarped {i} books")
+            
 ####################
 # HELPER FUNCTIONS #
 ####################
