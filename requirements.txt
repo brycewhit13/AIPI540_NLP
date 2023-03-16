@@ -3,3 +3,4 @@ pandas==1.5.3
 requests==2.28.2
 scikit-learn
 streamlit
+selenium==4.8.2
