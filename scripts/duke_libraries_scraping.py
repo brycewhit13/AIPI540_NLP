@@ -2,11 +2,13 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 import tensorflow as tf
+import numpy as np
+from tensorflow.keras import layers
 
 # create class for scraping
 class DukeLibrariesScraper:
 
-    def get_doc_ids(self,pages):
+    def save_doc_ids(self,pages,filename):
         url = 'https://find.library.duke.edu/?f%5Bresource_type_f%5D%5B%5D=Book&page='
         perPage = '&per_page=100'
         
@@ -19,10 +21,14 @@ class DukeLibrariesScraper:
             for h3_tag in h3_tags:
                 id_value = h3_tag.get('id').split('-')[0]
                 doc_ids.append(id_value)
+            if page % 1000 == 0:
+                df = pd.DataFrame({'doc_id': doc_ids})
+                df.to_csv(filename, mode='a', header=False, index=False)
+                df = []
                 
         return doc_ids
     
-    def get_book_details(self,doc_ids):
+    def save_book_details(self,doc_ids,filename):
         
         # create an empty book dataframe with column names
         df = pd.DataFrame(columns=['Title', 'Location', 'Authors','Summary','Published','Language','System Details',
@@ -57,31 +63,26 @@ class DukeLibrariesScraper:
                             'Language':language,'System Details':system_details,'Notes':notes,'Description':description,
                             'Description Details':description_details,'Genre':genre,'OCLC':oclc,
                             'Other Identifiers':other_identifiers,'System ID':system_id}, ignore_index=True)
+            if len(df) % 1000 == 0:
+              df.to_csv(filename, mode='a', header=False, index=False)
+              df = pd.DataFrame(columns=['Title', 'Location', 'Authors','Summary','Published','Language','System Details',
+                           'Notes','Description','Description Details','Genre','OCLC','Other Identifiers',
+                           'System ID'])
+    
 
-        return df
-            
     
 # create main
 if __name__ == "__main__":
-    # check if GPU is available
-    if tf.test.gpu_device_name():
-        print('GPU found')
-    else:
-        print("No GPU found")
+    # initialize TPU
+    resolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu='')
+    tf.config.experimental_connect_to_cluster(resolver)
+    tf.tpu.experimental.initialize_tpu_system(resolver)
+    strategy = tf.distribute.TPUStrategy(resolver)
 
-    # set up a TensorFlow session to use the GPU
-    physical_devices = tf.config.experimental.list_physical_devices('GPU')
-    if len(physical_devices) > 0:
-        tf.config.experimental.set_memory_growth(physical_devices[0], True)
-        print('Memory growth enabled')
-
-    # run the scraper to get doc IDs and save to a CSV file
-    scraper = DukeLibrariesScraper()
-    doc_ids = scraper.get_doc_ids(65702)
-    df = pd.DataFrame({'doc_id': doc_ids})
-    df.to_csv('duke_doc_ids.csv', index=False)
-    
-    '''doc_ids = pd.read_csv('data/duke_doc_ids.csv')
-    print(doc_ids)
-    df = scraper.get_book_details(doc_ids)
-    df.to_csv('data/duke_books.csv', index=False)'''
+    with strategy.scope():
+      # run the scraper to get doc IDs and save to a CSV file
+      scraper = DukeLibrariesScraper()
+      #scraper.save_doc_ids(65702,'data/duke_doc_ids.csv')
+      
+      doc_ids = pd.read_csv('data/duke_doc_ids.csv')
+      scraper.save_book_details(doc_ids[48001:],'data/duke_books.csv')
