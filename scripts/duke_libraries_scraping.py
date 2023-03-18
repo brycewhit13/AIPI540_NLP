@@ -85,4 +85,4 @@ if __name__ == "__main__":
       #scraper.save_doc_ids(65702,'data/duke_doc_ids.csv')
       
       doc_ids = pd.read_csv('data/duke_doc_ids.csv')
-      scraper.save_book_details(doc_ids[48001:],'data/duke_books.csv')
+      scraper.save_book_details(doc_ids[96001:],'data/duke_books.csv')
