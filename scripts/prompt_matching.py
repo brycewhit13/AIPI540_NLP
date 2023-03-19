@@ -4,6 +4,9 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from transformers import BertTokenizer, BertModel
+import torch
+
 
 class PromptMatching:
 
@@ -46,21 +49,50 @@ class PromptMatching:
         # Add cosine_similarity column to books dataframe
         books['cosine_similarity'] = cosine_similarity_scores
         
+    def bert_matching(self,prompt, books):
+        model_name = 'bert-base-uncased'
+        tokenizer = BertTokenizer.from_pretrained(model_name)
+        model = BertModel.from_pretrained(model_name)
+
+        book_summaries = books['Summary'].tolist()
+        book_ids = books.index.tolist()
+
+        book_embeddings = []
+        for summary in book_summaries:
+            summary_tokens = tokenizer(summary, truncation=True, padding='max_length', max_length=512, return_tensors='pt')
+            with torch.no_grad():
+                summary_embedding = model(summary_tokens['input_ids'], summary_tokens['attention_mask'])[0][:, 0, :]
+                book_embeddings.append(summary_embedding)
+
+        book_embeddings = torch.cat(book_embeddings, dim=0)
+        book_embeddings = book_embeddings.reshape(len(book_summaries), -1)
+        print(book_embeddings)
+        prompt_tokens = tokenizer(prompt, truncation=True, padding='max_length', max_length=512, return_tensors='pt')
+
+        with torch.no_grad():
+            prompt_embedding = model(prompt_tokens['input_ids'], prompt_tokens['attention_mask'])[0][:, 0, :]
+
+        similarities = cosine_similarity(prompt_embedding.reshape(1, -1), book_embeddings).squeeze().tolist()
+        books['bert_cosine_similarity'] = similarities
+        #ranked_books = sorted(zip(book_ids, similarities), key=lambda x: x[1], reverse=True)
+
+        #return ranked_books
+ 
 # create main for this class
 
 if __name__ == "__main__":
     # initialize this class
     prompt_matching = PromptMatching()
-    books = pd.read_csv('data/duke_books.csv')
+    books = pd.read_csv('data/duke_books_sample.csv')
+    books = books.drop_duplicates(subset=['Title'])
+    books = books.dropna(subset=['Summary'])
+    books = books.head(10)
+    
     #prompt = "Find a book about a detective solving a murder mystery in a small town."
     prompt = "Looking for a book that explores the changing role of religion in the 20th century. Specifically, how certain religious groups redefined what it meant to be religious and allowed their members the choice of what kind of God to believe in, or the option to not believe in God at all."
 
-    prompt_matching.keyword_matching(prompt,books)
-    prompt_matching.cosine_similarity(prompt,books)
-    
-    # check if cosine similarity is > 0.6 or keywords_match is true
-    matched = books[(books['cosine_similarity']>0.75) | (books['keywords_match'])]
-    print(matched)
+    prompt_matching.bert_matching(prompt,books)
+    print(books)
         
 
 
