@@ -30,13 +30,13 @@ class PromptMatching:
         # Add keywords_match column to books dataframe
         books['keywords_match'] = keywords_match
         
-    def cosine_similarity(self,prompt,books):
+    def cosine_similarity(self,prompt,books,col):
         vectorizer = TfidfVectorizer()
         prompt_vector = vectorizer.fit_transform([prompt])
 
         # Loop through each book summary
         cosine_similarity_scores = []
-        for summary in books['Summary']:
+        for summary in books[col]:
             if isinstance(summary, str):
                 # Calculate cosine similarity between summary and prompt
                 book_vector = vectorizer.transform([summary])
@@ -77,22 +77,34 @@ class PromptMatching:
         #ranked_books = sorted(zip(book_ids, similarities), key=lambda x: x[1], reverse=True)
 
         #return ranked_books
+        
+    def combine_summaries(self):
+        books_df = pd.read_csv('data/duke_books.csv')
+        abs_df = pd.read_csv('data/duke_books_abstractive.csv')
+        ext_df = pd.read_csv('data/extractive_summary_df.csv')
+        
+        merged_data = books_df.copy()
+        merged_data = pd.merge(merged_data, abs_df[['Title','abbreviated_summary']], how='inner', on='Title')
+        merged_data = pd.merge(merged_data, ext_df[['Title','extractive_summary']], how='inner', on='Title')
+
+        # drop duplicates based on the 'Title' column
+        merged_data.drop_duplicates(subset=['Title'], inplace=True)
+        merged_data.dropna(subset=['Summary'], inplace=True)
+
+        # save the merged data to a new CSV file
+        merged_data.to_csv('data/books_with_summaries.csv', index=False)
+        
  
 # create main for this class
 
 if __name__ == "__main__":
     # initialize this class
     prompt_matching = PromptMatching()
-    books = pd.read_csv('data/duke_books_sample.csv')
-    books = books.drop_duplicates(subset=['Title'])
-    books = books.dropna(subset=['Summary'])
-    books = books.head(10)
+    prompt_matching.combine_summaries()
     
     #prompt = "Find a book about a detective solving a murder mystery in a small town."
     prompt = "Looking for a book that explores the changing role of religion in the 20th century. Specifically, how certain religious groups redefined what it meant to be religious and allowed their members the choice of what kind of God to believe in, or the option to not believe in God at all."
 
-    prompt_matching.bert_matching(prompt,books)
-    print(books)
         
 
 
