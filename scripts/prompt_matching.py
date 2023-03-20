@@ -94,17 +94,42 @@ class PromptMatching:
         # save the merged data to a new CSV file
         merged_data.to_csv('data/books_with_summaries.csv', index=False)
         
+    def get_matched_prompt_results(self,prompt,books,col):
+        self.cosine_similarity(prompt,books,col)
+        matched = books.sort_values(by='cosine_similarity', ascending=False)
+        return matched.head(1)['cosine_similarity'].values[0]
+        
+    def run_validation_prompts(self):
+        validation_prompts = pd.read_csv('data/validation_prompts.csv')
+        validation_prompts.dropna(inplace=True)
+        validation_prompts = validation_prompts['prompt'].tolist()
+        books = pd.read_csv('data/books_with_summaries.csv')
+        # create empty dataframe to store results
+        results_df = pd.DataFrame(columns=['prompt', 'summary_cs', 'abb_summary_cs', 'ex_summary_cs'])
+    
+        for prompt in validation_prompts:
+            cs = self.get_matched_prompt_results(prompt,books,'Summary')
+            ab_cs = self.get_matched_prompt_results(prompt,books,'abbreviated_summary')
+            ext_cs = self.get_matched_prompt_results(prompt,books,'extractive_summary')
+            # create a new row for the results dataframe
+            new_row = {'prompt': prompt, 'summary_cs': cs, 'abb_summary_cs': ab_cs, 'ex_summary_cs': ext_cs}
+        
+            # append the row to the results dataframe
+            results_df = results_df.append(new_row, ignore_index=True)
+            
+        results_df.to_csv('data/prompts_with_cs.csv', index=False)  
  
 # create main for this class
 
 if __name__ == "__main__":
     # initialize this class
     prompt_matching = PromptMatching()
-    prompt_matching.combine_summaries()
+    #prompt_matching.combine_summaries()
+    prompt_matching.run_validation_prompts()
     
     #prompt = "Find a book about a detective solving a murder mystery in a small town."
     prompt = "Looking for a book that explores the changing role of religion in the 20th century. Specifically, how certain religious groups redefined what it meant to be religious and allowed their members the choice of what kind of God to believe in, or the option to not believe in God at all."
-
+    
         
 
 
