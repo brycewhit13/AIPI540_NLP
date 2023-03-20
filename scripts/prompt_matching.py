@@ -6,6 +6,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import BertTokenizer, BertModel
 import torch
+import warnings
+warnings.filterwarnings('ignore')
 
 
 class PromptMatching:
@@ -79,9 +81,9 @@ class PromptMatching:
         #return ranked_books
         
     def combine_summaries(self):
-        books_df = pd.read_csv('data/duke_books.csv')
-        abs_df = pd.read_csv('data/duke_books_abstractive.csv')
-        ext_df = pd.read_csv('data/extractive_summary_df.csv')
+        books_df = pd.read_csv('../data/duke_books.csv')
+        abs_df = pd.read_csv('../data/duke_books_abstractive.csv')
+        ext_df = pd.read_csv('../data/extractive_summary_df.csv')
         
         merged_data = books_df.copy()
         merged_data = pd.merge(merged_data, abs_df[['Title','abbreviated_summary']], how='inner', on='Title')
@@ -92,7 +94,7 @@ class PromptMatching:
         merged_data.dropna(subset=['Summary'], inplace=True)
 
         # save the merged data to a new CSV file
-        merged_data.to_csv('data/books_with_summaries.csv', index=False)
+        merged_data.to_csv('../data/books_with_summaries.csv', index=False)
         
     def get_matched_prompt_results(self,prompt,books,col):
         self.cosine_similarity(prompt,books,col)
@@ -100,24 +102,24 @@ class PromptMatching:
         return matched.head(1)['cosine_similarity'].values[0]
         
     def run_validation_prompts(self):
-        validation_prompts = pd.read_csv('data/validation_prompts.csv')
-        validation_prompts.dropna(inplace=True)
+        validation_prompts = pd.read_csv('../data/validation_prompts.csv')
         validation_prompts = validation_prompts['prompt'].tolist()
-        books = pd.read_csv('data/books_with_summaries.csv')
+        books = pd.read_csv('../data/books_with_summaries.csv')
         # create empty dataframe to store results
         results_df = pd.DataFrame(columns=['prompt', 'summary_cs', 'abb_summary_cs', 'ex_summary_cs'])
     
-        for prompt in validation_prompts:
+        for i, prompt in enumerate(validation_prompts):
             cs = self.get_matched_prompt_results(prompt,books,'Summary')
             ab_cs = self.get_matched_prompt_results(prompt,books,'abbreviated_summary')
             ext_cs = self.get_matched_prompt_results(prompt,books,'extractive_summary')
+            
             # create a new row for the results dataframe
             new_row = {'prompt': prompt, 'summary_cs': cs, 'abb_summary_cs': ab_cs, 'ex_summary_cs': ext_cs}
         
             # append the row to the results dataframe
             results_df = results_df.append(new_row, ignore_index=True)
             
-        results_df.to_csv('data/prompts_with_cs.csv', index=False)  
+        results_df.to_csv('../data/prompts_with_cs.csv', index=False)  
  
 # create main for this class
 
