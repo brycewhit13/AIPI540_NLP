@@ -18,9 +18,13 @@ Some people like the smell of books or just try to relax and read paper based bo
 ## Data Sources
 We scraped data from Duke libraries system and Durham public libraries. The most important field from the scraped data is summary of a book which is used to decide recommendation of that specific book.
 
-### Duke libraries
+### Duke Libraries
 
 https://find.library.duke.edu/?f%5Bresource_type_f%5D%5B%5D=Book&utm_campaign=dul&utm_content=search_find_portal_link&utm_medium=referral&utm_source=library.duke.edu
+
+### Durham County Library
+
+We scraped approximately 25,000 books from the durham county library. This is less than a quarter of all the books they have on their website, but due to computational and time restraints, it was not worthwhile to scrape them all. The code for scraping the books can be found in `scripts/dpl_scrape_data.py` and the data in `data/dpl_book_data.tsv`. The link to the data that was scraped can be found [here](https://durhamcounty.bibliocommons.com/v2/search?custom_edit=false&query=isolanguage%3A%22eng%22%20audience%3A%22adult%22%20formatcode%3A(BK%20)&searchType=bl&suppress=true).
 
 ## Model Training and Evaluation
 
