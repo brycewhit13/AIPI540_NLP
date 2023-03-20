@@ -107,7 +107,7 @@ class PromptMatching:
         # create empty dataframe to store results
         results_df = pd.DataFrame(columns=['prompt', 'summary_cs', 'abb_summary_cs', 'ex_summary_cs'])
     
-        for prompt in validation_prompts[:10]:
+        for prompt in validation_prompts:
             cs = self.get_matched_prompt_results(prompt,books,'Summary')
             ab_cs = self.get_matched_prompt_results(prompt,books,'abbreviated_summary')
             ext_cs = self.get_matched_prompt_results(prompt,books,'extractive_summary')
