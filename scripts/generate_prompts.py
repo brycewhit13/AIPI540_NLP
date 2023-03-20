@@ -69,12 +69,39 @@ def _create_prompt(topic):
     except:
         return ""
     
+    
+def clean_prompts(topics_df):
+    # Load the prompts
+    topics_df = load_validation_prompts()
+    
+    # Drop any prompts that are not of type string
+    topics_df_cleaned = topics_df[topics_df['prompt'].apply(lambda x: isinstance(x, str))]
+    
+    # Drop any prompts that are empty strings
+    topics_df_cleaned = topics_df_cleaned[topics_df_cleaned['prompt'] != ""]
+    
+    # If a prompt contains a newline, remove everything before and including the newline
+    topics_df_cleaned["prompt"] = topics_df_cleaned.apply(lambda x: x['prompt'].split("\n")[-1], axis=1)
+    
+    # Drop na
+    topics_df_cleaned = topics_df_cleaned.dropna(inplace=False)
+    
+    # Ensure there is only one quote on each side of the prompt
+    topics_df_cleaned["prompt"] = topics_df_cleaned.apply(lambda x: x['prompt'].replace("\"", ""), axis=1)
+    
+    # Remove rows where the topic contains no longer used
+    topics_df_cleaned = topics_df_cleaned[topics_df_cleaned['topic'].apply(lambda x: "no longer used" not in x)]
+    
+    return topics_df_cleaned
+    
+def save_prompts(topics_df):
+    topics_df.to_csv("../data/validation_prompts.csv", index=False)
+    
 if __name__ == "__main__":
     # Generate the prompts
     topics_df = get_dewey_topics()
     topics_df = generate_prompts(topics_df)
     
-    # Save the prompts to a csv file
-    topics_df.to_csv("../data/validation_prompts.csv", index=False)
-    
-    print(topics_df)
+    # Clean and save the prompts
+    topics_df = clean_prompts(topics_df)
+    save_prompts(topics_df)
