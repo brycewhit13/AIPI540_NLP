@@ -1,4 +1,5 @@
 # create a class for matching prompt to book
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
@@ -119,7 +120,27 @@ class PromptMatching:
             # append the row to the results dataframe
             results_df = results_df.append(new_row, ignore_index=True)
             
-        results_df.to_csv('../data/prompts_with_cs.csv', index=False)  
+        results_df.to_csv('../data/prompts_with_cs.csv', index=False) 
+        
+    def calculate_summary_metrics(self):
+        # Load the data
+        data = pd.read_csv('../data/prompts_with_cs.csv')
+        
+        # Calculate the average cosine similarity for each prompt
+        avg_base_cs = data.groupby('prompt')['summary_cs'].mean()
+        avg_abb_cs = data.groupby('prompt')['abb_summary_cs'].mean()
+        avg_extract_cs = data.groupby('prompt')['ex_summary_cs'].mean()
+        
+        # Print the results
+        print(f"Average Cosine Similarity for Base Summary: {np.round(avg_base_cs.mean(), 4)}")
+        print(f"Average Cosine Similarity for Abstractive Summary: {np.round(avg_abb_cs.mean(), 4)}")
+        print(f"Average Cosine Similarity for Extractive Summary: {np.round(avg_extract_cs.mean(), 4)}")
+        
+        # Create a boxplot for each
+        plt.boxplot([avg_base_cs, avg_abb_cs, avg_extract_cs], labels=['Base Summary', 'Abstractive Summary', 'Extractive Summary'])
+        plt.title("Cosine Similarity for each Summary Type")
+        plt.ylabel("Cosine Similarity")
+        plt.savefig('../imgs/summary_boxplot.png') 
  
 # create main for this class
 
@@ -127,10 +148,11 @@ if __name__ == "__main__":
     # initialize this class
     prompt_matching = PromptMatching()
     #prompt_matching.combine_summaries()
-    prompt_matching.run_validation_prompts()
+    #prompt_matching.run_validation_prompts()
+    prompt_matching.calculate_summary_metrics()
     
     #prompt = "Find a book about a detective solving a murder mystery in a small town."
-    prompt = "Looking for a book that explores the changing role of religion in the 20th century. Specifically, how certain religious groups redefined what it meant to be religious and allowed their members the choice of what kind of God to believe in, or the option to not believe in God at all."
+    #prompt = "Looking for a book that explores the changing role of religion in the 20th century. Specifically, how certain religious groups redefined what it meant to be religious and allowed their members the choice of what kind of God to believe in, or the option to not believe in God at all."
     
         
 

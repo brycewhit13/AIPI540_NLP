@@ -9,7 +9,7 @@ For example, a user would submit the following prompt;
 `Looking for a book that explores the changing role of religion in the 20th century. Specifically, how certain religious groups redefined what it meant to be religious and allowed their members the choice of what kind of God to believe in, or the option to not believe in God at all.
 `
 And the result will contain title, location, and other important information of matching books from the library.
-![](data/book-results.png)
+![](imgs/book-results.png)
 
 
 ## Why libraries instead of online resources?
