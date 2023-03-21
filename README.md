@@ -30,11 +30,19 @@ We scraped approximately 25,000 books from the durham county library. This is le
 
 ### Non-Deep Learning methods
 
+#### **Generating Exctractive Summaries** 
+One issue we noticed with the Duke Library website is the differenc in quality and length of the summaries for different books. We wanted to standardize what the user would see as a book summary. First we tried using extractive summary methods to create a summary of a standard length that retained only the key information from the original book summary. First we filtered the original book data frame to only contain books with summaries over 100 words. We then tockenized the sentences in these summaries and used TF-IDF vectorizer to create feature vectors of the sentences. Then we created a document graph populated by the similarity of the feature vectors and applied the Page Rank algorithim do identify the most important sentences. We used the top five most important sentences as our abbreviated book summary. 
+
 #### **Keyword Matching - Bag-of-Words approach**
 It takes in a prompt and a collection of books, and checks whether each book summary contains all the relevant keywords in the prompt. It does this by using a technique called CountVectorizer to convert the prompt and each book summary into a vector of word counts. Then it compares the word count vectors to check if all the relevant keywords from the prompt are present in each book summary. If a book summary contains all the relevant keywords, then the function sets the keywords_match column for that book to True.
 
 #### **Cosine Similarity - TF-IDF technique**
 It takes in a prompt and a collection of books, and calculates the cosine similarity between the prompt and each book summary. It does this by using a technique called TfidfVectorizer to convert the prompt and each book summary into a vector of TF-IDF scores. Then it calculates the cosine similarity between the prompt vector and each book vector using the cosine_similarity function. The function then sets the cosine_similarity column for each book to the cosine similarity score between the prompt and the book summary.
+
+### Deep Learning methods 
+
+#### **Generating Abstractive Summaries 
+We used a second approach to generating abbreviated standardized summaries for the books in our data set. The goal was the exact same as with the extravtive summaries however our approach differed in that instead of using a document graph and Page Rank, we used a pre-trained Seq2Seq transformer model to generate the summaries. 
 
 ## Application
 
