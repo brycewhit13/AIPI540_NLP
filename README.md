@@ -1,7 +1,6 @@
 # Book Recommendation System
 
 > #### _Iqra, Bryce, Bruno | Spring '23 | Duke AIPI 540 NLP Project_
-&nbsp;
 
 ## Project Description
 
