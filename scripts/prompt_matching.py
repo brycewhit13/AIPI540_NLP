@@ -14,6 +14,14 @@ warnings.filterwarnings('ignore')
 class PromptMatching:
 
     def keyword_matching(self,prompt,books):
+        """Takes a prompt and compares the keywords in the prompt to each book summary in the data. 
+        If all keywords in the prompt are present in the summary, the book is considered a match.
+        Otherwise, the book is not considered a match.
+
+        Args:
+            prompt (str): a prompt to match to books
+            books (pd.DataFrame): a dataframe consiting of the book data
+        """
         # Prompt and relevant keywords
         vectorizer = CountVectorizer()
         keywords = vectorizer.fit_transform([prompt]).toarray()[0]
@@ -34,6 +42,13 @@ class PromptMatching:
         books['keywords_match'] = keywords_match
         
     def cosine_similarity(self,prompt,books,col):
+        """Calculates the cosine similarity between the prompt and each book summary in the data.
+
+        Args:
+            prompt (str): a prompt to match to books
+            books (pd.DataFrame): a dataframe consiting of the book data
+            col (str): The column containing the summary of interest
+        """
         vectorizer = TfidfVectorizer()
         prompt_vector = vectorizer.fit_transform([prompt])
 
@@ -53,6 +68,13 @@ class PromptMatching:
         books['cosine_similarity'] = cosine_similarity_scores
         
     def bert_matching(self,prompt, books):
+        """Calculates the cosine similarity between the prompt and each book summary in the data using
+        BERT embeddings instead of TF-IDF vectors.
+
+        Args:
+            prompt (str): a prompt to match to books
+            books (pd.DataFrame): a dataframe consiting of the book data
+        """
         model_name = 'bert-base-uncased'
         tokenizer = BertTokenizer.from_pretrained(model_name)
         model = BertModel.from_pretrained(model_name)
@@ -77,11 +99,10 @@ class PromptMatching:
 
         similarities = cosine_similarity(prompt_embedding.reshape(1, -1), book_embeddings).squeeze().tolist()
         books['bert_cosine_similarity'] = similarities
-        #ranked_books = sorted(zip(book_ids, similarities), key=lambda x: x[1], reverse=True)
-
-        #return ranked_books
         
     def combine_summaries(self):
+        """Combines the summaries from the different models into one dataframe.
+        """
         books_df = pd.read_csv('../data/duke_books.csv')
         abs_df = pd.read_csv('../data/duke_books_abstractive.csv')
         ext_df = pd.read_csv('../data/extractive_summary_df.csv')
@@ -98,11 +119,25 @@ class PromptMatching:
         merged_data.to_csv('../data/books_with_summaries.csv', index=False)
         
     def get_matched_prompt_results(self,prompt,books,col):
+        """Returns the cosine similarity score for the best matched book summary.
+
+        Args:
+            prompt (str): a prompt to match to books
+            books (pd.DataFrame): a dataframe consiting of the book data
+            col (str): The column containing the summary of interest
+            
+        Returns:
+            pd.DataFrame: a dataframe containing the book that matches the prompt best
+
+        """
         self.cosine_similarity(prompt,books,col)
         matched = books.sort_values(by='cosine_similarity', ascending=False)
         return matched.head(1)['cosine_similarity'].values[0]
         
     def run_validation_prompts(self):
+        """Runs the large scale validation using the generated prompts.
+        The results are saved to a CSV file.
+        """
         validation_prompts = pd.read_csv('../data/validation_prompts.csv')
         validation_prompts = validation_prompts['prompt'].tolist()
         books = pd.read_csv('../data/books_with_summaries.csv')
@@ -123,6 +158,9 @@ class PromptMatching:
         results_df.to_csv('../data/prompts_with_cs.csv', index=False) 
         
     def calculate_summary_metrics(self):
+        """Calculates the average cosine similarity for each summary type and prints the results.
+        A boxplot is also created for each summary type and saved into the imgs folder. 
+        """
         # Load the data
         data = pd.read_csv('../data/prompts_with_cs.csv')
         

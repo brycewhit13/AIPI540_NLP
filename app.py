@@ -11,6 +11,14 @@ books = pd.read_csv('data/books_with_summaries.csv')
 
 # Define function to search for relevant book summaries using keyword matching
 def search_books_by_keyword(prompt):
+    """Searches for the most relevant books using keyword matching
+
+    Args:
+        prompt (str): any prompt to search for books
+
+    Returns:
+        matched (pd.DataFrame): A dataframe containing the books that have the necessary keywords
+    """
     pm = prompt_matching.PromptMatching()
     pm.keyword_matching(prompt, books)
     matched = books[books['keywords_match']]
@@ -18,6 +26,16 @@ def search_books_by_keyword(prompt):
 
 # Define function to search for relevant book summaries using cosine similarity
 def search_books_by_cosine_similarity(prompt,col, num_books=3):
+    """Searches for the most relevant books using cosine similarity
+
+    Args:
+        prompt (str): any prompt to search for books
+        col (str): the column containing the summary of interest
+        num_books (int, optional): The number of books to return. Defaults to 3.
+
+    Returns:
+        pd.DataFrame: A dataframe containing the books that have the highest cosine similarity scores
+    """
     pm = prompt_matching.PromptMatching()
     pm.cosine_similarity(prompt, books,col)
     matched = books
@@ -25,6 +43,11 @@ def search_books_by_cosine_similarity(prompt,col, num_books=3):
     return matched.head(num_books)
 
 def display_results(results):
+    """Displays the results of the search in the streamlit app
+
+    Args:
+        results (pd.DataFrame): The top books resulting from the search
+    """
     top_3_books = results.head(3)
     count = 0
     for index, row in top_3_books.iterrows():

@@ -9,6 +9,16 @@ from tensorflow.keras import layers
 class DukeLibrariesScraper:
 
     def save_doc_ids(self,pages,filename):
+        """Saves the ids of the books in the Duke Libraries catalog to a csv file.
+        The ids will be used to scrape the book details from the Duke Libraries catalog later
+
+        Args:
+            pages (int): The number of pages to scrape
+            filename (str): the name of the file to save the ids to
+
+        Returns:
+            doc_ids (list): a list of the ids of the books in the Duke Libraries catalog
+        """
         url = 'https://find.library.duke.edu/?f%5Bresource_type_f%5D%5B%5D=Book&page='
         perPage = '&per_page=100'
         
@@ -29,7 +39,13 @@ class DukeLibrariesScraper:
         return doc_ids
     
     def save_book_details(self,doc_ids,filename):
-        
+        """Save the details of the books in the Duke Libraries catalog to a csv file.
+        This includes the title, authors, summary, genre, and other metadata.
+
+        Args:
+            doc_ids (list): a list of the ids of the books in the Duke Libraries catalog
+            filename (str): the name of the file to save the book details to
+        """
         # create an empty book dataframe with column names
         df = pd.DataFrame(columns=['Title', 'Location', 'Authors','Summary','Published','Language','System Details',
                            'Notes','Description','Description Details','Genre','OCLC','Other Identifiers',
