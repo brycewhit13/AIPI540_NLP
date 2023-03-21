@@ -56,8 +56,8 @@ We used a second approach to generating abbreviated standardized summaries for t
 
 We found cosine similarity was more accurate, reliable, and flexible than keyword matching. However, we did not find a significant difference in recommendation performance when using the summaries from the website compared to the extarcted and abstractive summaries that we generated. In all cases, the cosine similarity between the prompt and summaries was roughly the same. Here are the results:
 
-**Average cosine similarity for the base summaries: 0.6963**
-**Average cosine similarity for the abstractive summaries: 0.6947**
+**Average cosine similarity for the base summaries: 0.6963** <br />
+**Average cosine similarity for the abstractive summaries: 0.6947** <br />
 **Average cosine similarity for the extractive summaries: 0.6956**
 
 Here is a boxplot representing the same results:
